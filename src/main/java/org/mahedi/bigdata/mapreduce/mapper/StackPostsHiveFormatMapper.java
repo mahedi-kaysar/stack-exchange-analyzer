@@ -30,7 +30,7 @@ public class StackPostsHiveFormatMapper extends Mapper<LongWritable, List<Text>,
 		logger.info("key=" + key);
 
 		StringBuffer sb = new StringBuffer();
-		if (!values.get(0).toString().equalsIgnoreCase("Id")) {
+		if (!values.get(0).toString().equalsIgnoreCase("Id") && !values.get(9).toString().isEmpty()) {
 			for (int i = 1; i < values.size(); i++) {
 				if (i == 8 || i == 16) {
 					String bodyTags = values.get(i).toString().replaceAll("\\n", "").replaceAll("[^a-zA-Z0-9\\s]", " ");

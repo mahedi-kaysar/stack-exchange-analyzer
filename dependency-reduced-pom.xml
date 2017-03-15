@@ -28,7 +28,7 @@
             <configuration>
               <transformers>
                 <transformer>
-                  <mainClass>org.mahedi.bigdata.mapreduce.StackExchangeETL</mainClass>
+                  <mainClass>org.mahedi.bigdata.mapreduce.StackExchangeTFIDF</mainClass>
                 </transformer>
               </transformers>
             </configuration>
