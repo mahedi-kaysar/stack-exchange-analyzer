@@ -25,7 +25,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
  * implements the getSplits method so splits are made by lines
  * 
  * 
- * @author mahedi
+ * @author Md. Mahedi Kayasr(md.kaysar2@mail.dcu.ie, id:16213961)
  * 
  */
 public class CSVNLineInputFormat extends FileInputFormat<LongWritable, List<Text>> {

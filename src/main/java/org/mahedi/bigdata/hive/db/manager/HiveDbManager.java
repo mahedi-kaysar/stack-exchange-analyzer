@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 /**
  * This class establishes connection to hive server through jdbc driver.
  * 
- * @author mahedi
+ * @author Md. Mahedi Kayasr(md.kaysar2@mail.dcu.ie, id:16213961)
  *
  */
 public class HiveDbManager {

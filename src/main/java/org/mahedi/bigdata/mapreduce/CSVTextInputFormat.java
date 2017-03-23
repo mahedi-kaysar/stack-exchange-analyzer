@@ -16,7 +16,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
  * lines, even if the CSV has multiple lines inside a single column
  * 
  *
- * @author mahedi
+ * @author Md. Mahedi Kayasr(md.kaysar2@mail.dcu.ie, id:16213961)
  *
  */
 public class CSVTextInputFormat extends FileInputFormat<LongWritable, List<Text>> {

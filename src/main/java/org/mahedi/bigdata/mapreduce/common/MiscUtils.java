@@ -2,6 +2,11 @@ package org.mahedi.bigdata.mapreduce.common;
 
 import java.util.*;
 
+/**
+ * 
+ * @author Md. Mahedi Kayasr(md.kaysar2@mail.dcu.ie, id:16213961) 
+ *
+ */
 public class MiscUtils {
 
   

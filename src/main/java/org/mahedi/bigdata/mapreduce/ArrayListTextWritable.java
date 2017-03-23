@@ -12,7 +12,7 @@ import org.apache.hadoop.io.Writable;
  * This class is used to allow serialization and deserialization from hadoop
  * side. Besides that, it behaves as a simple ArrayList
  * 
- * @author mahedi
+ * @author Md. Mahedi Kayasr(md.kaysar2@mail.dcu.ie, id:16213961)
  *
  */
 public class ArrayListTextWritable extends ArrayList<Text> implements Writable {

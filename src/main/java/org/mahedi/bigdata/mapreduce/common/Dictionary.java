@@ -7,7 +7,7 @@ import java.util.Set;
  * This class contains the different types of word's dictionary
  * For example, stop words
  * 
- * @author mahedi
+ * @author Md. Mahedi Kayasr(md.kaysar2@mail.dcu.ie, id:16213961)
  *
  */
 public class Dictionary {

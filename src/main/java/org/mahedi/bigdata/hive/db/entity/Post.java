@@ -3,7 +3,7 @@ package org.mahedi.bigdata.hive.db.entity;
 /**
  * It represents a Post
  * 
- * @author mahedi
+ * @author Md. Mahedi Kayasr(md.kaysar2@mail.dcu.ie, id:16213961)
  *
  */
 public class Post {

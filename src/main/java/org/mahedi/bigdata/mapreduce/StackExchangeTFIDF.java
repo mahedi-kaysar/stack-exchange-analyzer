@@ -2,14 +2,12 @@ package org.mahedi.bigdata.mapreduce;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -20,8 +18,13 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 import org.mahedi.bigdata.mapreduce.common.Dictionary;
-import org.mahedi.bigdata.mapreduce.common.MiscUtils;
 
+/**
+ * This class find the TF of all the words. Each word has the information of corresponding user
+ * 
+ * @author Md. Mahedi Kayasr(md.kaysar2@mail.dcu.ie, id:16213961)
+ *
+ */
 public class StackExchangeTFIDF extends Configured implements Tool {
 	private static final Logger logger = Logger.getLogger(StackExchangeTFIDF.class.getName());
 
@@ -36,6 +39,7 @@ public class StackExchangeTFIDF extends Configured implements Tool {
 	/**
 	 * 
 	 */
+
 	public int run(String[] args) throws Exception {
 
 		getConf().set(CSVLineRecordReader.FORMAT_DELIMITER, "\"");
@@ -44,28 +48,25 @@ public class StackExchangeTFIDF extends Configured implements Tool {
 		getConf().setBoolean(CSVLineRecordReader.IS_ZIPFILE, false);
 		getConf().set(CSVLineRecordReader.CSV_SEPARATOR, ",");
 
-		Job csvJob = Job.getInstance(getConf(), "Stack Exchange ETL with TD_IDF");
+		Job csvJob = Job.getInstance(getConf(), "Stack Exchange ETL: Count Words");
 		csvJob.setJarByClass(StackExchangeTFIDF.class);
-		// csvJob.setNumReduceTasks(1);
 
-		// csvJob.setMapperClass(WordFrequencyMapper.class);
-		csvJob.setMapperClass(TopNMapper.class);
+		csvJob.setMapperClass(TFMapper.class);
 
-		// csvJob.setCombinerClass(TopNPostByScoreCombiner.class);
-		// csvJob.setReducerClass(WordFrequencyReducer.class);
-		csvJob.setReducerClass(TopNReducer.class);
-
-		csvJob.setInputFormatClass(CSVTextInputFormat.class);
+		csvJob.setReducerClass(TFReducer.class);
+		csvJob.setNumReduceTasks(1);
+		// key = word
 		csvJob.setOutputKeyClass(Text.class);
-		csvJob.setOutputValueClass(IntWritable.class);
+		// value = TF-IDF
+		csvJob.setOutputValueClass(Text.class);
 
 		FileInputFormat.setInputPaths(csvJob, new Path(args[0]));
+		csvJob.setInputFormatClass(CSVTextInputFormat.class);
+
 		FileOutputFormat.setOutputPath(csvJob, new Path(args[1]));
 
 		logger.info("Process will begin");
-
 		csvJob.waitForCompletion(true);
-
 		logger.info("Process ended");
 
 		return 0;
@@ -93,22 +94,25 @@ public class StackExchangeTFIDF extends Configured implements Tool {
 	 * The mapper reads one line at the time, splits it into an array of single
 	 * words and emits every word to the reducers with the value of 1.
 	 */
-	public static class TopNMapper extends Mapper<Object, List<Text>, Text, IntWritable> {
+	public static class TFMapper extends Mapper<Object, List<Text>, Text, Text> {
 
-		private final static IntWritable one = new IntWritable(1);
+		private final static Text one = new Text("1");
 		private Text word = new Text();
 
 		@Override
 		public void map(Object key, List<Text> values, Context context) throws IOException, InterruptedException {
 
-			if (!values.get(0).toString().equalsIgnoreCase("Id")) {
-				List<String> tokens = getTokensWithoutStopWords(
-						values.get(8).toString().replaceAll("\\n", "").replaceAll("[^a-zA-Z0-9\\s]", " "));
-				for (String token : tokens) {
-					word.set(token);
-					context.write(word, one);
-				}
+			if (values.size() > 9) {
+				if (!values.get(0).toString().equalsIgnoreCase("Id") && !values.get(9).toString().trim().isEmpty()) {
+					List<String> tokens = getTokensWithoutStopWords(
+							values.get(8).toString().replaceAll("\\n", "").replaceAll("[^a-zA-Z0-9\\s]", " "));
+					for (String token : tokens) {
+						String newkey = values.get(0).toString().trim() + "," + token;
+						word.set(newkey);
+						context.write(word, one);
+					}
 
+				}
 			}
 		}
 
@@ -128,55 +132,42 @@ public class StackExchangeTFIDF extends Configured implements Tool {
 	}
 
 	/**
-	 * The reducer retrieves every word and puts it into a Map: if the word
-	 * already exists in the map, increments its value, otherwise sets it to 1.
+	 * Write TF of all words in (key = userid, value=word:tf) format
+	 * 
+	 * @author mahedi
+	 *
 	 */
-	public static class TopNReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
-
-		private Map<Text, IntWritable> countMap = new HashMap<>();
+	public static class TFReducer extends Reducer<Text, Text, Text, Text> {
 
 		@Override
-		public void reduce(Text key, Iterable<IntWritable> values, Context context)
+		protected void reduce(Text key, Iterable<Text> values, Reducer<Text, Text, Text, Text>.Context context)
 				throws IOException, InterruptedException {
-
-			int sum = 0;
-			for (IntWritable val : values) {
-				sum += val.get();
+			int tf = 0;
+			for (Text a : values) {
+				tf += Integer.parseInt(a.toString());
 			}
-
-			countMap.put(new Text(key), new IntWritable(sum));
-		}
-
-		@Override
-		protected void cleanup(Context context) throws IOException, InterruptedException {
-
-			Map<Text, IntWritable> sortedMap = MiscUtils.sortByValues(countMap);
-
-			int counter = 0;
-			for (Text key : sortedMap.keySet()) {
-				if (counter++ == 10) {
-					break;
-				}
-				context.write(new Text(key.toString()+","), sortedMap.get(key));
-			}
+			String[] keytuple = key.toString().split(",");
+			context.write(new Text(keytuple[0] + ","), new Text(keytuple[1] + ":" + tf));
+			// key = userid, value=word:tf
 		}
 	}
 
 	/**
-	 * The combiner retrieves every word and puts it into a Map: if the word
-	 * already exists in the map, increments its value, otherwise sets it to 1.
+	 * Read TF for all users
+	 * 
+	 * @author mahedi
+	 *
 	 */
-	public static class TopNCombiner extends Reducer<Text, IntWritable, Text, IntWritable> {
+	public static class TFByUserMapper extends Mapper<LongWritable, Text, Text, Text> {
 
+		// value=userid,word:tf
 		@Override
-		public void reduce(Text key, Iterable<IntWritable> values, Context context)
+		protected void map(LongWritable key, Text value, Mapper<LongWritable, Text, Text, Text>.Context context)
 				throws IOException, InterruptedException {
-
-			int sum = 0;
-			for (IntWritable val : values) {
-				sum += val.get();
-			}
-			context.write(key, new IntWritable(sum));
+			String[] tokens = value.toString().split(",");
+			Text userId = new Text(tokens[0]);
+			Text wordTFpair = new Text(tokens[1].trim());
+			context.write(userId, wordTFpair);
 		}
 	}
 

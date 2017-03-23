@@ -111,8 +111,9 @@
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 <!-- 									<mainClass>org.mahedi.bigdata.mapreduce.StackExchangeETL</mainClass> -->
-									<mainClass>org.mahedi.bigdata.mapreduce.StackExchangeTFIDF</mainClass>
-									
+<!--  									<mainClass>org.mahedi.bigdata.mapreduce.StackExchangeTFIDF</mainClass> -->
+<!-- 					 				<mainClass>org.mahedi.bigdata.mapreduce.StackExchangeTopN_TFIDF</mainClass> -->
+										<mainClass>org.mahedi.bigdata.AssignmentOneLauncher</mainClass>												
 								</transformer>
 							</transformers>
 						</configuration>

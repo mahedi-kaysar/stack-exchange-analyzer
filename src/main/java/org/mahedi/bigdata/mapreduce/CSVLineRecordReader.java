@@ -27,7 +27,7 @@ import java.util.zip.ZipInputStream;
  * Reads a CSV line. CSV files could be multiline, as they may have line breaks
  * inside a column
  * 
- * @author mahedi
+ * @author Md. Mahedi Kayasr(md.kaysar2@mail.dcu.ie, id:16213961)
  * 
  */
 public class CSVLineRecordReader extends RecordReader<LongWritable, List<Text>> {
